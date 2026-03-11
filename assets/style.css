@@ -95,15 +95,11 @@ a { color: inherit; text-decoration: none; }
 }
 
 .main {
-  display: grid;
-  grid-template-columns: 320px 1fr;
-  gap: 16px;
+  display: block;
 }
 
-.sidebar {
-  position: sticky;
-  top: 16px;
-  height: fit-content;
+.intro {
+  margin-bottom: 16px;
 }
 
 .profile-card {
@@ -149,7 +145,7 @@ a { color: inherit; text-decoration: none; }
 
 .profile-stats {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   margin-top: 16px;
 }
@@ -257,8 +253,6 @@ a { color: inherit; text-decoration: none; }
 }
 
 @media (max-width: 900px) {
-  .main { grid-template-columns: 1fr; }
-  .sidebar { position: static; }
   #searchInput { width: 140px; }
 }
 
@@ -266,4 +260,5 @@ a { color: inherit; text-decoration: none; }
   .app { padding: 12px; }
   #searchInput { width: 120px; }
   .post-avatar { width: 40px; height: 40px; }
+  .profile-stats { grid-template-columns: 1fr 1fr; }
 }
