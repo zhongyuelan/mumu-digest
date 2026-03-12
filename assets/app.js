@@ -2,18 +2,17 @@ const searchInput = document.getElementById('searchInput');
 const posts = Array.from(document.querySelectorAll('.post'));
 const themeToggle = document.getElementById('themeToggle');
 const themeKey = 'mumu-theme-light';
+const filterTrigger = document.getElementById('filterDropdownTrigger');
+const filterDropdown = document.getElementById('typeFilterDropdown');
+const filterItems = Array.from(document.querySelectorAll('.dropdown-item'));
+const currentFilterIcon = document.getElementById('currentFilterIcon');
+const filterStatus = document.getElementById('filterStatus');
+const currentFilterLabel = document.getElementById('currentFilterLabel');
+const clearFilter = document.getElementById('clearFilter');
 
-// 搜索：直接搜索整条帖子全文（含原文、翻译、作者、来源）
-searchInput?.addEventListener('input', () => {
-  const q = searchInput.value.trim().toLowerCase();
-  posts.forEach((post) => {
-    const haystack = `${post.innerText} ${(post.dataset.tags || '')}`.toLowerCase();
-    post.style.display = !q || haystack.includes(q) ? '' : 'none';
-  });
-});
+let activeType = 'all';
 
-// 初始化主题
-const applyTheme = (light) => {
+function applyTheme(light) {
   if (light) {
     document.documentElement.classList.add('light');
     themeToggle.textContent = '🌙';
@@ -23,16 +22,55 @@ const applyTheme = (light) => {
     themeToggle.textContent = '☀️';
     localStorage.setItem(themeKey, '0');
   }
-};
-
-if (localStorage.getItem(themeKey) === '1') {
-  applyTheme(true);
-} else {
-  applyTheme(false);
 }
 
-// 切换日间/夜间模式
-themeToggle?.addEventListener('click', () => {
-  const isLight = document.documentElement.classList.contains('light');
-  applyTheme(!isLight);
+function applyFilters() {
+  const q = (searchInput?.value || '').trim().toLowerCase();
+  posts.forEach((post) => {
+    const haystack = `${post.innerText} ${(post.dataset.tags || '')}`.toLowerCase();
+    const typeOk = activeType === 'all' || post.dataset.type === activeType;
+    const textOk = !q || haystack.includes(q);
+    post.style.display = typeOk && textOk ? '' : 'none';
+  });
+
+  if (activeType === 'all') {
+    filterStatus?.classList.remove('show');
+    currentFilterLabel.textContent = 'All';
+    currentFilterIcon.textContent = '📑';
+  } else {
+    filterStatus?.classList.add('show');
+    currentFilterLabel.textContent = activeType === 'repost' ? 'Repost' : 'Original';
+    currentFilterIcon.textContent = activeType === 'repost' ? '🔄' : '📝';
+  }
+}
+
+searchInput?.addEventListener('input', applyFilters);
+
+if (localStorage.getItem(themeKey) === '1') applyTheme(true); else applyTheme(false);
+themeToggle?.addEventListener('click', () => applyTheme(!document.documentElement.classList.contains('light')));
+
+filterTrigger?.addEventListener('click', (e) => {
+  e.stopPropagation();
+  filterTrigger.classList.toggle('open');
 });
+
+document.addEventListener('click', () => filterTrigger?.classList.remove('open'));
+filterDropdown?.addEventListener('click', (e) => e.stopPropagation());
+
+filterItems.forEach((item) => {
+  item.addEventListener('click', () => {
+    filterItems.forEach((x) => x.classList.remove('active'));
+    item.classList.add('active');
+    activeType = item.dataset.type;
+    filterTrigger.classList.remove('open');
+    applyFilters();
+  });
+});
+
+clearFilter?.addEventListener('click', () => {
+  activeType = 'all';
+  filterItems.forEach((x) => x.classList.toggle('active', x.dataset.type === 'all'));
+  applyFilters();
+});
+
+applyFilters();
